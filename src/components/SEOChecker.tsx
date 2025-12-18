@@ -68,15 +68,18 @@ export default function SEOChecker() {
       });
 
       if (fnError) {
-        throw new Error('Analysis service unavailable. Please try again.');
+        console.error('Function error:', fnError);
+        throw new Error(fnError.message || 'Analysis service unavailable. Please try again.');
       }
 
       if (!data || !data.success) {
+        console.error('Data error:', data);
         throw new Error(data?.error || 'Unable to analyze this website.');
       }
 
       setResults(data);
     } catch (err: unknown) {
+      console.error('Catch error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
