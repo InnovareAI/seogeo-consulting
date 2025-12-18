@@ -97,17 +97,54 @@ export default function SEOChecker() {
     <div className="min-h-screen bg-black">
       <div className="max-w-5xl mx-auto px-4 py-12">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-4xl md:text-6xl font-bold text-cyan-400 mb-4 tracking-tight">
             Business SEO/GEO Analyzer
           </h1>
           <p className="text-xl text-gray-400">
             Measure your website's search visibility and AI-readiness for modern discovery
           </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Optimize for Google, ChatGPT, Perplexity, and AI-powered search
-          </p>
         </div>
+
+        {/* Info Cards */}
+        {!results && !loading && (
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                  <span className="text-cyan-400 text-xl">S</span>
+                </div>
+                <h3 className="text-xl font-bold text-white">SEO Score</h3>
+              </div>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                <span className="text-white font-medium">Search Engine Optimization</span> measures how well your website ranks on Google and traditional search engines. We analyze title tags, meta descriptions, content depth, page speed, mobile optimization, and technical SEO factors that determine your visibility in search results.
+              </p>
+            </div>
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                  <span className="text-orange-400 text-xl">G</span>
+                </div>
+                <h3 className="text-xl font-bold text-white">GEO Score</h3>
+              </div>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                <span className="text-white font-medium">Generative Engine Optimization</span> measures how likely AI systems like ChatGPT, Perplexity, and Claude will cite your content. We evaluate conversational structure, FAQ schemas, E-E-A-T signals, and content patterns that AI models prefer when generating answers.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Why It Matters */}
+        {!results && !loading && (
+          <div className="bg-gradient-to-r from-cyan-900/20 to-orange-900/20 border border-zinc-800 rounded-2xl p-6 mb-8">
+            <h3 className="text-lg font-bold text-white mb-3">Why Both Scores Matter</h3>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              In 2025, your customers find you through <span className="text-cyan-400">Google searches</span> AND <span className="text-orange-400">AI-powered answers</span>.
+              A high SEO score drives organic traffic, while a high GEO score ensures AI assistants recommend your business.
+              Companies optimizing for both see up to <span className="text-white font-medium">40% more qualified leads</span> than those focusing on traditional SEO alone.
+            </p>
+          </div>
+        )}
 
         {/* Search Form */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 mb-8">
