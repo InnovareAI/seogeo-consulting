@@ -290,7 +290,7 @@ export default function SEOChecker() {
 
         {/* Footer */}
         <div className="text-center mt-12 text-purple-300/60">
-          <p>Powered by SEOGEO Consulting</p>
+          <p>Powered by 3Cubed.ai</p>
         </div>
       </div>
     </div>
