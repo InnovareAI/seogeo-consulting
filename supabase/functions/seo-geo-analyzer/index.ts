@@ -31,6 +31,9 @@ interface Recommendation {
   title: string;
   detail: string;
   priority: 'high' | 'medium' | 'low';
+  category: 'seo' | 'geo' | 'technical' | 'content';
+  impact: string;
+  steps: string[];
 }
 
 interface GeoScoreBreakdown {
@@ -202,14 +205,40 @@ async function generateAiRecommendations(params: {
   seoScore: number;
   geoScore: number;
   issues: string[];
+  seoBreakdown: Array<{factor: string; points: number; detail: string}>;
+  geoBreakdown: Array<{factor: string; points: number; detail: string}>;
 }): Promise<Recommendation[] | null> {
-  const { apiKey, model, seoScore, geoScore, issues } = params
-  const prompt = `You are an SEO strategist. Based on these scores and issues, return a JSON array with 3-5 recommendations.
-Each item must have: title (string), detail (string), priority ("high" | "medium" | "low").
-SEO Score: ${seoScore}/100
-GEO Score: ${geoScore}/100
-Issues: ${issues.join('; ') || 'None detected'}
-Return JSON array only, no extra text.`
+  const { apiKey, model, seoScore, geoScore, issues, seoBreakdown, geoBreakdown } = params
+
+  const lowSeoFactors = seoBreakdown.filter(f => f.points < 5).map(f => `${f.factor}: ${f.detail}`).join('\n');
+  const lowGeoFactors = geoBreakdown.filter(f => f.points < 5).map(f => `${f.factor}: ${f.detail}`).join('\n');
+
+  const prompt = `You are a senior SEO/GEO consultant analyzing a business website. Generate 5-7 detailed, actionable recommendations.
+
+SCORES:
+- SEO Score: ${seoScore}/100 (Google & traditional search)
+- GEO Score: ${geoScore}/100 (ChatGPT, Perplexity, AI search)
+
+DETECTED ISSUES:
+${issues.map(i => `- ${i}`).join('\n') || '- None detected'}
+
+LOW-SCORING SEO FACTORS:
+${lowSeoFactors || '- All factors scoring well'}
+
+LOW-SCORING GEO FACTORS:
+${lowGeoFactors || '- All factors scoring well'}
+
+Return a JSON array where each recommendation has:
+- title: Clear action title (e.g., "Add FAQ Schema Markup")
+- detail: 2-3 sentence explanation of WHY this matters and the business impact
+- priority: "high" | "medium" | "low" based on impact
+- category: "seo" | "geo" | "technical" | "content"
+- impact: One sentence describing expected improvement (e.g., "Can increase AI citations by 30-40%")
+- steps: Array of 3-5 specific implementation steps
+
+Prioritize recommendations that will improve BOTH SEO and GEO scores where possible.
+Focus on actionable, specific advice - not generic tips.
+Return ONLY the JSON array, no other text.`
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -221,23 +250,29 @@ Return JSON array only, no extra text.`
       },
       body: JSON.stringify({
         model,
-        temperature: 0.2,
+        temperature: 0.3,
+        max_tokens: 2000,
         messages: [
-          { role: 'system', content: 'Respond with a JSON array only.' },
+          { role: 'system', content: 'You are an expert SEO/GEO consultant. Always respond with valid JSON arrays only. No markdown, no explanations.' },
           { role: 'user', content: prompt }
         ]
       })
     })
     if (!response.ok) return null
     const data = await response.json()
-    const content = data?.choices?.[0]?.message?.content?.trim()
+    let content = data?.choices?.[0]?.message?.content?.trim()
     if (!content) return null
+    // Clean up any markdown formatting
+    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     const parsed = JSON.parse(content)
     if (!Array.isArray(parsed)) return null
-    return parsed.slice(0, 5).map((item: Record<string, unknown>) => ({
+    return parsed.slice(0, 7).map((item: Record<string, unknown>) => ({
       title: String(item.title ?? 'Recommendation'),
       detail: String(item.detail ?? ''),
-      priority: ['high', 'medium', 'low'].includes(item.priority as string) ? item.priority as 'high' | 'medium' | 'low' : 'medium'
+      priority: ['high', 'medium', 'low'].includes(item.priority as string) ? item.priority as 'high' | 'medium' | 'low' : 'medium',
+      category: ['seo', 'geo', 'technical', 'content'].includes(item.category as string) ? item.category as 'seo' | 'geo' | 'technical' | 'content' : 'seo',
+      impact: String(item.impact ?? 'Improves overall visibility'),
+      steps: Array.isArray(item.steps) ? (item.steps as string[]).slice(0, 5).map(s => String(s)) : ['Review and implement this recommendation']
     }))
   } catch (error) {
     console.error('AI recommendation error:', error)
@@ -314,7 +349,9 @@ Deno.serve(async (req) => {
         model: 'openai/gpt-4o-mini',
         seoScore: seoEvaluation.score,
         geoScore: geoEvaluation.score,
-        issues
+        issues,
+        seoBreakdown: seoEvaluation.breakdown,
+        geoBreakdown: geoEvaluation.breakdown
       })
       if (aiRecs) recommendations = aiRecs
     }

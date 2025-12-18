@@ -20,6 +20,9 @@ interface Recommendation {
   title: string;
   detail: string;
   priority: 'high' | 'medium' | 'low';
+  category: 'seo' | 'geo' | 'technical' | 'content';
+  impact: string;
+  steps: string[];
 }
 
 interface SnapshotData {
@@ -261,20 +264,62 @@ export default function SEOChecker() {
             {/* Recommendations */}
             {results.analysis?.recommendations && results.analysis.recommendations.length > 0 && (
               <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
-                <h3 className="text-2xl font-bold text-cyan-400 mb-6">AI Recommendations</h3>
-                <ul className="space-y-4">
+                <h3 className="text-2xl font-bold text-cyan-400 mb-6">Detailed Recommendations</h3>
+                <p className="text-gray-500 text-sm mb-6">AI-generated action plan based on your analysis results</p>
+                <div className="space-y-6">
                   {results.analysis.recommendations.map((rec, i) => (
-                    <li key={i} className="bg-zinc-800 rounded-xl p-6">
-                      <div className="flex justify-between items-start mb-3">
-                        <h4 className="text-lg font-semibold text-white">{rec.title}</h4>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${priorityStyles[rec.priority]}`}>
-                          {rec.priority.toUpperCase()}
-                        </span>
+                    <div key={i} className="bg-zinc-800 rounded-xl p-6 border border-zinc-700">
+                      {/* Header */}
+                      <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl font-bold text-zinc-600">{i + 1}</span>
+                          <h4 className="text-lg font-semibold text-white">{rec.title}</h4>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            rec.category === 'seo' ? 'bg-cyan-900/50 text-cyan-300 border border-cyan-700' :
+                            rec.category === 'geo' ? 'bg-orange-900/50 text-orange-300 border border-orange-700' :
+                            rec.category === 'technical' ? 'bg-purple-900/50 text-purple-300 border border-purple-700' :
+                            'bg-green-900/50 text-green-300 border border-green-700'
+                          }`}>
+                            {rec.category?.toUpperCase() || 'SEO'}
+                          </span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${priorityStyles[rec.priority]}`}>
+                            {rec.priority?.toUpperCase() || 'MEDIUM'}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-gray-400">{rec.detail}</p>
-                    </li>
+
+                      {/* Description */}
+                      <p className="text-gray-300 mb-4">{rec.detail}</p>
+
+                      {/* Impact */}
+                      {rec.impact && (
+                        <div className="bg-zinc-900 rounded-lg p-3 mb-4">
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Expected Impact</span>
+                          <p className="text-green-400 font-medium mt-1">{rec.impact}</p>
+                        </div>
+                      )}
+
+                      {/* Steps */}
+                      {rec.steps && rec.steps.length > 0 && (
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Implementation Steps</span>
+                          <ol className="mt-2 space-y-2">
+                            {rec.steps.map((step, j) => (
+                              <li key={j} className="flex items-start gap-3">
+                                <span className="flex-shrink-0 w-6 h-6 bg-zinc-700 rounded-full flex items-center justify-center text-xs text-gray-400">
+                                  {j + 1}
+                                </span>
+                                <span className="text-gray-400 text-sm">{step}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
 
