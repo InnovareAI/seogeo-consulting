@@ -212,8 +212,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendApiKey) {
+    const postmarkToken = Deno.env.get('POSTMARK_SERVER_TOKEN');
+    if (!postmarkToken) {
       return new Response(
         JSON.stringify({ success: false, error: 'Email service not configured' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
@@ -222,23 +222,25 @@ Deno.serve(async (req) => {
 
     const htmlContent = generateEmailHtml(data);
 
-    const response = await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.postmarkapp.com/email', {
       method: 'POST',
       headers: {
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${resendApiKey}`
+        'X-Postmark-Server-Token': postmarkToken
       },
       body: JSON.stringify({
-        from: '3Cubed.ai <reports@3cubed.ai>',
-        to: [data.email],
-        subject: `Your SEO/GEO Analysis Report - ${data.url}`,
-        html: htmlContent
+        From: 'reports@3cubed.ai',
+        To: data.email,
+        Subject: `Your SEO/GEO Analysis Report - ${data.url}`,
+        HtmlBody: htmlContent,
+        MessageStream: 'outbound'
       })
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Resend error:', errorData);
+      console.error('Postmark error:', errorData);
       return new Response(
         JSON.stringify({ success: false, error: 'Failed to send email' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
@@ -272,7 +274,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, messageId: result.id }),
+      JSON.stringify({ success: true, messageId: result.MessageID }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {
