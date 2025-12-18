@@ -230,7 +230,7 @@ Deno.serve(async (req) => {
         'X-Postmark-Server-Token': postmarkToken
       },
       body: JSON.stringify({
-        From: 'reports@3cubed.ai',
+        From: '3cubed AI Team <info@3cubed.ai>',
         To: data.email,
         Subject: `Your SEO/GEO Analysis Report - ${data.url}`,
         HtmlBody: htmlContent,
