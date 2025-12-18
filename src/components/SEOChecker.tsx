@@ -47,6 +47,10 @@ export default function SEOChecker() {
   const [loading, setLoading] = useState<boolean>(false);
   const [results, setResults] = useState<AnalysisResults | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState<string>('');
+  const [sendingEmail, setSendingEmail] = useState<boolean>(false);
+  const [emailSent, setEmailSent] = useState<boolean>(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const priorityStyles: Record<string, string> = {
     high: 'bg-red-900/50 text-red-300 border border-red-700',
@@ -94,6 +98,44 @@ export default function SEOChecker() {
     if (score >= 60) return 'text-cyan-400';
     if (score >= 40) return 'text-orange-400';
     return 'text-red-400';
+  };
+
+  const sendReportEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !results) return;
+
+    setSendingEmail(true);
+    setEmailError(null);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('send-report-email', {
+        body: {
+          email,
+          url: results.snapshot.url,
+          seoScore: results.analysis?.seoScore || 0,
+          geoScore: results.analysis?.geoScore || 0,
+          seoBreakdown: results.analysis?.seoBreakdown || [],
+          geoBreakdown: results.analysis?.geoBreakdown || [],
+          issues: results.analysis?.issues || [],
+          recommendations: results.analysis?.recommendations || [],
+          snapshot: results.snapshot
+        }
+      });
+
+      if (fnError) {
+        throw new Error(fnError.message || 'Failed to send email');
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to send email');
+      }
+
+      setEmailSent(true);
+    } catch (err: unknown) {
+      setEmailError(err instanceof Error ? err.message : 'Failed to send email');
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   return (
@@ -215,6 +257,63 @@ export default function SEOChecker() {
                 <div className="text-xl font-semibold text-cyan-400 mt-4">GEO Score</div>
                 <p className="text-gray-500 mt-2">ChatGPT, Perplexity & AI search</p>
               </div>
+            </div>
+
+            {/* Email Capture Form */}
+            <div className="bg-gradient-to-r from-orange-900/30 to-cyan-900/30 border border-orange-500/50 rounded-2xl p-8">
+              {emailSent ? (
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Report Sent!</h3>
+                  <p className="text-gray-400">Check your inbox at <span className="text-cyan-400">{email}</span> for the full analysis report.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
+                      <svg className="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Get Your Full Report via Email</h3>
+                      <p className="text-gray-400 text-sm">Receive a detailed PDF-style report with all recommendations and action items</p>
+                    </div>
+                  </div>
+                  <form onSubmit={sendReportEmail} className="flex flex-col sm:flex-row gap-4">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email address"
+                      className="flex-1 px-6 py-4 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      disabled={sendingEmail}
+                      className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 whitespace-nowrap"
+                    >
+                      {sendingEmail ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          Sending...
+                        </span>
+                      ) : 'Send Report'}
+                    </button>
+                  </form>
+                  {emailError && (
+                    <p className="text-red-400 text-sm mt-3">{emailError}</p>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Page Snapshot */}
