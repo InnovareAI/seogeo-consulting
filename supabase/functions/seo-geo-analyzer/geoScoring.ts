@@ -49,13 +49,13 @@ export function evaluateGeoSignals(html: string, snapshot: SnapshotData): GeoEva
   const h2Tags = snapshot.h2Tags ?? [];
   const h2Count = h2Tags.length;
 
-  // Detect structured data
+  // Detect structured data - Business focused schemas
   const hasStructuredData = schemaMarkup.length > 0;
   const hasFaqSchema = schemaMarkup.some((block) =>
     /"@type"\s*:\s*"FAQPage"/i.test(block)
   );
-  const hasMedicalSchema = schemaMarkup.some((block) =>
-    /"@type"\s*:\s*"(Drug|MedicalCondition|MedicalWebPage)"/i.test(block)
+  const hasBusinessSchema = schemaMarkup.some((block) =>
+    /"@type"\s*:\s*"(Organization|LocalBusiness|Service|Product|Article|HowTo|WebPage|BreadcrumbList)"/i.test(block)
   );
 
   // Detect FAQ content
@@ -66,25 +66,26 @@ export function evaluateGeoSignals(html: string, snapshot: SnapshotData): GeoEva
   const hasFaqContent = hasFaqSchema || faqHeading || questionMatches.length >= 3;
   const questionCount = questionMatches.length;
 
-  // Check for conversational headers
+  // Check for conversational headers - AI search friendly
   const allHeaders = [...h1Tags, ...h2Tags].join(' ').toLowerCase();
-  const hasConversationalHeaders = /\b(what|how|why|when|guide|understanding)\b/.test(allHeaders);
+  const hasConversationalHeaders = /\b(what|how|why|when|guide|understanding|best|top|tips|ways|steps)\b/.test(allHeaders);
 
-  // Structured formatting
+  // Structured formatting - important for AI parsing
   const hasOrderedList = /<ol[^>]*>/i.test(html);
   const hasUnorderedList = /<ul[^>]*>/i.test(html);
   const hasTable = /<table[^>]*>/i.test(html);
   const hasStructuredFormatting = hasOrderedList || hasUnorderedList || hasTable;
 
-  // Authority signals
-  const hasCitations = /\b(source|reference|citation|study|research|fda|journal|pubmed|clinical)\b/i.test(html);
-  const hasHighQualityCitations = /<a[^>]*href=["'](.*?fda\.gov|.*?nih\.gov|.*?pubmed)["']/i.test(html);
-  const hasStatistics = /\d+%|\d+\s*(patients?|participants?|response|efficacy)/i.test(html);
+  // Authority signals - Business & industry focused
+  const hasCitations = /\b(source|reference|citation|study|research|report|survey|data|according\s+to|statistics)\b/i.test(html);
+  const hasHighQualityCitations = /<a[^>]*href=["'](.*?\.gov|.*?\.edu|.*?forbes|.*?harvard|.*?mckinsey|.*?gartner|.*?statista)["']/i.test(html);
+  const hasStatistics = /\d+%|\d+\s*(percent|companies|businesses|customers|users|increase|decrease|growth)/i.test(html);
 
-  // E-E-A-T signals
-  const hasAuthorByline = /\b(by|author|written\s+by)\s+(Dr\.|MD|PhD|PharmD)/i.test(html);
-  const hasMedicalReview = /medically\s+reviewed\s+by/i.test(html);
-  const eeatCount = [hasAuthorByline, hasMedicalReview].filter(Boolean).length;
+  // E-E-A-T signals - Experience, Expertise, Authority, Trust
+  const hasAuthorByline = /\b(by|author|written\s+by|contributor)\b/i.test(html);
+  const hasCredentials = /\b(CEO|founder|expert|consultant|analyst|MBA|CPA|certified|professional|years\s+of\s+experience)\b/i.test(html);
+  const hasAboutSection = /\b(about\s+us|our\s+team|who\s+we\s+are|our\s+story)\b/i.test(html);
+  const eeatCount = [hasAuthorByline, hasCredentials, hasAboutSection].filter(Boolean).length;
   const hasEEAT = eeatCount > 0;
 
   // Meta optimization
@@ -119,156 +120,159 @@ export function evaluateGeoSignals(html: string, snapshot: SnapshotData): GeoEva
   const breakdown: GeoScoreBreakdown[] = [];
   let rawScore = 0;
 
-  // CONVERSATIONAL HEADERS (15 points)
+  // CONVERSATIONAL HEADERS (15 points) - Critical for AI search
   if (hasConversationalHeaders && h1Tags.length > 0) {
     rawScore += 15;
-    breakdown.push({ factor: 'conversational_headers', points: 15, detail: 'Conversational headers detected.' });
+    breakdown.push({ factor: 'conversational_headers', points: 15, detail: 'AI-friendly conversational headers detected.' });
   } else if (h1Tags.length > 0) {
     rawScore += 5;
-    breakdown.push({ factor: 'conversational_headers', points: 5, detail: 'Headers present but not conversational.' });
+    breakdown.push({ factor: 'conversational_headers', points: 5, detail: 'Headers present but could be more conversational.' });
   } else {
-    breakdown.push({ factor: 'conversational_headers', points: 0, detail: 'Missing conversational structure.' });
+    breakdown.push({ factor: 'conversational_headers', points: 0, detail: 'Missing conversational header structure.' });
   }
 
   // HEADER STRUCTURE (10 points)
   if (h2Count >= 6) {
     rawScore += 10;
-    breakdown.push({ factor: 'structure', points: 10, detail: `Rich structure: ${h2Count} H2 tags.` });
+    breakdown.push({ factor: 'structure', points: 10, detail: `Excellent structure: ${h2Count} H2 sections.` });
   } else if (h2Count >= 4) {
     rawScore += 6;
-    breakdown.push({ factor: 'structure', points: 6, detail: `Good structure: ${h2Count} H2 tags.` });
+    breakdown.push({ factor: 'structure', points: 6, detail: `Good structure: ${h2Count} H2 sections.` });
   } else {
     rawScore += 2;
-    breakdown.push({ factor: 'structure', points: 2, detail: `Minimal structure.` });
+    breakdown.push({ factor: 'structure', points: 2, detail: `Limited structure for AI parsing.` });
   }
 
-  // CONTENT DEPTH (12 points)
+  // CONTENT DEPTH (12 points) - AI needs comprehensive content
   if (wordCount >= 1500) {
     rawScore += 12;
-    breakdown.push({ factor: 'content_depth', points: 12, detail: `Comprehensive (${wordCount} words).` });
+    breakdown.push({ factor: 'content_depth', points: 12, detail: `Comprehensive content (${wordCount} words).` });
   } else if (wordCount >= 800) {
     rawScore += 8;
     breakdown.push({ factor: 'content_depth', points: 8, detail: `Good depth (${wordCount} words).` });
   } else if (wordCount >= 400) {
     rawScore += 4;
-    breakdown.push({ factor: 'content_depth', points: 4, detail: `Moderate (${wordCount} words).` });
+    breakdown.push({ factor: 'content_depth', points: 4, detail: `Moderate depth (${wordCount} words).` });
   } else {
-    breakdown.push({ factor: 'content_depth', points: 0, detail: `Thin content (${wordCount} words).` });
+    breakdown.push({ factor: 'content_depth', points: 0, detail: `Thin content limits AI visibility (${wordCount} words).` });
   }
 
-  // STRUCTURED DATA (15 points)
-  if (hasMedicalSchema) {
+  // STRUCTURED DATA (15 points) - Business schemas
+  if (hasBusinessSchema && hasFaqSchema) {
     rawScore += 15;
-    breakdown.push({ factor: 'structured_data', points: 15, detail: 'Medical schema present.' });
-  } else if (hasStructuredData) {
+    breakdown.push({ factor: 'structured_data', points: 15, detail: 'Rich business + FAQ schema markup.' });
+  } else if (hasBusinessSchema || hasStructuredData) {
     rawScore += 8;
     breakdown.push({ factor: 'structured_data', points: 8, detail: 'Schema markup present.' });
   } else {
-    breakdown.push({ factor: 'structured_data', points: 0, detail: 'No structured data.' });
+    breakdown.push({ factor: 'structured_data', points: 0, detail: 'No structured data for AI engines.' });
   }
 
-  // FAQ SCHEMA (18 points)
+  // FAQ SCHEMA (18 points) - High value for AI answers
   if (hasFaqSchema) {
     rawScore += 18;
-    breakdown.push({ factor: 'faq_schema', points: 18, detail: 'FAQPage schema implemented.' });
+    breakdown.push({ factor: 'faq_schema', points: 18, detail: 'FAQPage schema - excellent for AI answers.' });
   } else if (hasFaqContent) {
     rawScore += 5;
-    breakdown.push({ factor: 'faq_schema', points: 5, detail: 'FAQ content but no schema.' });
+    breakdown.push({ factor: 'faq_schema', points: 5, detail: 'FAQ content found but no schema markup.' });
   } else {
     breakdown.push({ factor: 'faq_schema', points: 0, detail: 'No FAQ content or schema.' });
   }
 
-  // VOICE SEARCH (20 points)
+  // VOICE/AI SEARCH OPTIMIZATION (20 points)
   if (questionCount >= 8) {
     rawScore += 20;
-    breakdown.push({ factor: 'voice_search', points: 20, detail: `Excellent (${questionCount} questions).` });
+    breakdown.push({ factor: 'ai_search_ready', points: 20, detail: `Excellent AI coverage (${questionCount} Q&A patterns).` });
   } else if (questionCount >= 5) {
     rawScore += 15;
-    breakdown.push({ factor: 'voice_search', points: 15, detail: `Good (${questionCount} questions).` });
+    breakdown.push({ factor: 'ai_search_ready', points: 15, detail: `Good AI coverage (${questionCount} Q&A patterns).` });
   } else if (questionCount >= 3) {
     rawScore += 8;
-    breakdown.push({ factor: 'voice_search', points: 8, detail: `Moderate (${questionCount} questions).` });
+    breakdown.push({ factor: 'ai_search_ready', points: 8, detail: `Moderate AI coverage (${questionCount} Q&A patterns).` });
   } else {
     rawScore += 2;
-    breakdown.push({ factor: 'voice_search', points: 2, detail: `Limited question content.` });
+    breakdown.push({ factor: 'ai_search_ready', points: 2, detail: `Limited question-answer content for AI.` });
   }
 
   // AUTHORITY SIGNALS (12 points)
   if (hasHighQualityCitations && hasStatistics) {
     rawScore += 12;
-    breakdown.push({ factor: 'authority_signals', points: 12, detail: 'High-quality citations + stats.' });
-  } else if (hasCitations) {
+    breakdown.push({ factor: 'authority_signals', points: 12, detail: 'Strong citations + data points.' });
+  } else if (hasCitations || hasStatistics) {
     rawScore += 6;
-    breakdown.push({ factor: 'authority_signals', points: 6, detail: 'Citations detected.' });
+    breakdown.push({ factor: 'authority_signals', points: 6, detail: 'Some authority signals detected.' });
   } else {
-    breakdown.push({ factor: 'authority_signals', points: 0, detail: 'No authority signals.' });
+    breakdown.push({ factor: 'authority_signals', points: 0, detail: 'Add citations and data for credibility.' });
   }
 
-  // PERFORMANCE (5 points)
+  // PERFORMANCE (5 points) - Fast sites rank better
   if (loadTime <= 2000) {
     rawScore += 5;
-    breakdown.push({ factor: 'performance', points: 5, detail: `Fast (${loadTime}ms).` });
+    breakdown.push({ factor: 'performance', points: 5, detail: `Fast load time (${loadTime}ms).` });
   } else if (loadTime <= 3500) {
     rawScore += 3;
-    breakdown.push({ factor: 'performance', points: 3, detail: `Good (${loadTime}ms).` });
+    breakdown.push({ factor: 'performance', points: 3, detail: `Acceptable speed (${loadTime}ms).` });
   } else {
-    breakdown.push({ factor: 'performance', points: 0, detail: `Slow (${loadTime}ms).` });
+    breakdown.push({ factor: 'performance', points: 0, detail: `Slow performance hurts rankings (${loadTime}ms).` });
   }
 
-  // E-E-A-T (13 points)
-  if (eeatCount >= 2) {
+  // E-E-A-T (13 points) - Critical for business trust
+  if (eeatCount >= 3) {
     rawScore += 13;
-    breakdown.push({ factor: 'eeat_signals', points: 13, detail: 'Strong E-E-A-T signals.' });
+    breakdown.push({ factor: 'eeat_signals', points: 13, detail: 'Strong E-E-A-T signals (expertise + trust).' });
+  } else if (eeatCount >= 2) {
+    rawScore += 8;
+    breakdown.push({ factor: 'eeat_signals', points: 8, detail: 'Good E-E-A-T foundation.' });
   } else if (eeatCount === 1) {
-    rawScore += 5;
-    breakdown.push({ factor: 'eeat_signals', points: 5, detail: 'Some E-E-A-T signals.' });
+    rawScore += 4;
+    breakdown.push({ factor: 'eeat_signals', points: 4, detail: 'Basic E-E-A-T signals present.' });
   } else {
-    breakdown.push({ factor: 'eeat_signals', points: 0, detail: 'No E-E-A-T signals.' });
+    breakdown.push({ factor: 'eeat_signals', points: 0, detail: 'Add author credentials and expertise signals.' });
   }
 
   // META OPTIMIZATION (10 points)
   let metaPoints = 0;
-  if (hasOptimalTitleLength) metaPoints += 4;
-  if (hasOptimalMetaLength) metaPoints += 4;
+  if (hasOptimalTitleLength) metaPoints += 5;
+  if (hasOptimalMetaLength) metaPoints += 5;
   rawScore += metaPoints;
-  breakdown.push({ factor: 'meta_optimization', points: metaPoints, detail: `Meta tags: ${metaPoints}/8 points.` });
+  breakdown.push({ factor: 'meta_optimization', points: metaPoints, detail: `Meta tags: ${metaPoints}/10 points.` });
 
   // IMAGE OPTIMIZATION (5 points)
   if (altCoverage >= 0.9) {
     rawScore += 5;
-    breakdown.push({ factor: 'image_optimization', points: 5, detail: `${imagesWithAlt}/${imageCount} with alt.` });
+    breakdown.push({ factor: 'image_optimization', points: 5, detail: `Excellent alt text (${imagesWithAlt}/${imageCount}).` });
   } else if (altCoverage >= 0.5) {
     rawScore += 3;
-    breakdown.push({ factor: 'image_optimization', points: 3, detail: `${imagesWithAlt}/${imageCount} with alt.` });
+    breakdown.push({ factor: 'image_optimization', points: 3, detail: `Partial alt text (${imagesWithAlt}/${imageCount}).` });
   } else {
-    breakdown.push({ factor: 'image_optimization', points: 0, detail: 'Poor alt text coverage.' });
+    breakdown.push({ factor: 'image_optimization', points: 0, detail: 'Images need alt text for AI indexing.' });
   }
 
   // INTERNAL LINKING (5 points)
   if (internalLinkCount >= 10) {
     rawScore += 5;
-    breakdown.push({ factor: 'internal_linking', points: 5, detail: `${internalLinkCount} internal links.` });
+    breakdown.push({ factor: 'internal_linking', points: 5, detail: `Strong internal linking (${internalLinkCount} links).` });
   } else if (internalLinkCount >= 5) {
     rawScore += 3;
-    breakdown.push({ factor: 'internal_linking', points: 3, detail: `${internalLinkCount} internal links.` });
+    breakdown.push({ factor: 'internal_linking', points: 3, detail: `Good internal linking (${internalLinkCount} links).` });
   } else {
-    breakdown.push({ factor: 'internal_linking', points: 0, detail: 'Few internal links.' });
+    breakdown.push({ factor: 'internal_linking', points: 0, detail: 'Add more internal links for topic authority.' });
   }
 
   // STRUCTURED FORMATTING (5 points)
   if (hasStructuredFormatting) {
     rawScore += 5;
-    breakdown.push({ factor: 'structured_formatting', points: 5, detail: 'Lists/tables detected.' });
+    breakdown.push({ factor: 'structured_formatting', points: 5, detail: 'Lists/tables help AI parse content.' });
   } else {
-    breakdown.push({ factor: 'structured_formatting', points: 0, detail: 'No structured formatting.' });
+    breakdown.push({ factor: 'structured_formatting', points: 0, detail: 'Add lists or tables for better AI parsing.' });
   }
 
   // CONTENT FRESHNESS (5 points)
   if (hasContentFreshness) {
     rawScore += 5;
-    breakdown.push({ factor: 'content_freshness', points: 5, detail: 'Recent content signals.' });
+    breakdown.push({ factor: 'content_freshness', points: 5, detail: 'Recent content signals detected.' });
   } else {
-    breakdown.push({ factor: 'content_freshness', points: 0, detail: 'No freshness signals.' });
+    breakdown.push({ factor: 'content_freshness', points: 0, detail: 'Update content with current year references.' });
   }
 
   // Normalize to 0-100
@@ -301,7 +305,7 @@ export function evaluateGeoSignals(html: string, snapshot: SnapshotData): GeoEva
 export function orderBreakdown(entries: GeoScoreBreakdown[]): GeoScoreBreakdown[] {
   const factorOrder = [
     'conversational_headers', 'structure', 'content_depth', 'structured_data',
-    'faq_schema', 'voice_search', 'authority_signals', 'performance',
+    'faq_schema', 'ai_search_ready', 'authority_signals', 'performance',
     'eeat_signals', 'meta_optimization', 'image_optimization',
     'internal_linking', 'structured_formatting', 'content_freshness'
   ];

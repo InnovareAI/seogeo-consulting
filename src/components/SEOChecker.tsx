@@ -96,10 +96,13 @@ export default function SEOChecker() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-cyan-400 mb-4 tracking-tight">
-            SEO/GEO Analyzer
+            Business SEO/GEO Analyzer
           </h1>
           <p className="text-xl text-gray-400">
-            Analyze your website's SEO performance and AI-readiness
+            Measure your website's search visibility and AI-readiness for modern discovery
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Optimize for Google, ChatGPT, Perplexity, and AI-powered search
           </p>
         </div>
 
@@ -159,7 +162,7 @@ export default function SEOChecker() {
                 </div>
                 <div className="text-2xl text-gray-500 mt-2">/ 100</div>
                 <div className="text-xl font-semibold text-cyan-400 mt-4">SEO Score</div>
-                <p className="text-gray-500 mt-2">Traditional search optimization</p>
+                <p className="text-gray-500 mt-2">Google & traditional search engines</p>
               </div>
               <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center">
                 <div className={`text-7xl font-bold ${getScoreColor(results.analysis?.geoScore || 0)}`}>
@@ -167,7 +170,7 @@ export default function SEOChecker() {
                 </div>
                 <div className="text-2xl text-gray-500 mt-2">/ 100</div>
                 <div className="text-xl font-semibold text-cyan-400 mt-4">GEO Score</div>
-                <p className="text-gray-500 mt-2">AI & voice search readiness</p>
+                <p className="text-gray-500 mt-2">ChatGPT, Perplexity & AI search</p>
               </div>
             </div>
 
