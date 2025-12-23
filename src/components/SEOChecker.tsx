@@ -194,7 +194,7 @@ export default function SEOChecker() {
         {/* Search Form */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 mb-8">
           <form onSubmit={analyzeURL} className="space-y-4 md:space-y-6">
-            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 gap-4 md:gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2 ml-1">Website URL</label>
                 <input
@@ -394,9 +394,9 @@ export default function SEOChecker() {
                         </div>
                         <div className="flex gap-2">
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${rec.category === 'seo' ? 'bg-cyan-900/50 text-cyan-300 border border-cyan-700' :
-                              rec.category === 'geo' ? 'bg-orange-900/50 text-orange-300 border border-orange-700' :
-                                rec.category === 'technical' ? 'bg-purple-900/50 text-purple-300 border border-purple-700' :
-                                  'bg-green-900/50 text-green-300 border border-green-700'
+                            rec.category === 'geo' ? 'bg-orange-900/50 text-orange-300 border border-orange-700' :
+                              rec.category === 'technical' ? 'bg-purple-900/50 text-purple-300 border border-purple-700' :
+                                'bg-green-900/50 text-green-300 border border-green-700'
                             }`}>
                             {rec.category?.toUpperCase() || 'SEO'}
                           </span>
