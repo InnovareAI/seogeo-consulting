@@ -8,3 +8,4 @@
 - [ ] **PDF export** - Generate downloadable PDF reports
 - [ ] **Scheduled monitoring** - Weekly/monthly automated checks
 - [ ] **White-label option** - Custom branding for clients
+- [/] **UI: Relocate email capture field** - Move email input after the domain field

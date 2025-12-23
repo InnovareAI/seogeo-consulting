@@ -192,31 +192,52 @@ export default function SEOChecker() {
         )}
 
         {/* Search Form */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 mb-8">
-          <form onSubmit={analyzeURL} className="flex flex-col sm:flex-row gap-4">
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="Enter website URL (e.g., https://example.com)"
-              className="flex-1 px-6 py-4 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none text-lg"
-              required
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40"
-            >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Analyzing...
-                </span>
-              ) : 'Analyze'}
-            </button>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 mb-8">
+          <form onSubmit={analyzeURL} className="space-y-4 md:space-y-6">
+            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2 ml-1">Website URL</label>
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  className="w-full px-6 py-4 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none text-lg transition-all"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2 ml-1">Email Address (for your report)</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full px-6 py-4 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none text-lg transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+              <p className="text-gray-500 text-sm italic">
+                {email ? 'We\'ll send your detailed analysis to this email.' : 'Provide an email to receive a detailed PDF-style report.'}
+              </p>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full sm:w-auto px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 transform hover:-translate-y-0.5 active:translate-y-0"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-3">
+                    <svg className="animate-spin h-6 w-6" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Analyzing...
+                  </span>
+                ) : 'Analyze Website'}
+              </button>
+            </div>
           </form>
         </div>
 
@@ -259,60 +280,57 @@ export default function SEOChecker() {
               </div>
             </div>
 
-            {/* Email Capture Form */}
-            <div className="bg-gradient-to-r from-orange-900/30 to-cyan-900/30 border border-orange-500/50 rounded-2xl p-8">
-              {emailSent ? (
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            {/* Report Actions */}
+            <div className="bg-gradient-to-r from-orange-900/20 to-cyan-900/20 border border-zinc-800 rounded-2xl p-8">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center border border-orange-500/20 shadow-inner">
+                    <svg className="w-7 h-7 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Report Sent!</h3>
-                  <p className="text-gray-400">Check your inbox at <span className="text-cyan-400">{email}</span> for the full analysis report.</p>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-white">Get Your Full Report via Email</h3>
-                      <p className="text-gray-400 text-sm">Receive a detailed PDF-style report with all recommendations and action items</p>
-                    </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Analysis Complete</h3>
+                    <p className="text-gray-400">
+                      {emailSent
+                        ? `Report has been dispatched to ${email}`
+                        : email
+                          ? `Ready to send your full report to ${email}`
+                          : 'Provide your email above to save this report'}
+                    </p>
                   </div>
-                  <form onSubmit={sendReportEmail} className="flex flex-col sm:flex-row gap-4">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email address"
-                      className="flex-1 px-6 py-4 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
-                      required
-                    />
-                    <button
-                      type="submit"
-                      disabled={sendingEmail}
-                      className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 whitespace-nowrap"
-                    >
-                      {sendingEmail ? (
-                        <span className="flex items-center gap-2">
-                          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                          </svg>
-                          Sending...
-                        </span>
-                      ) : 'Send Report'}
-                    </button>
-                  </form>
-                  {emailError && (
-                    <p className="text-red-400 text-sm mt-3">{emailError}</p>
-                  )}
-                </>
+                </div>
+
+                {!emailSent && email && (
+                  <button
+                    onClick={sendReportEmail}
+                    disabled={sendingEmail}
+                    className="w-full md:w-auto px-10 py-4 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-all duration-300 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 disabled:opacity-50"
+                  >
+                    {sendingEmail ? (
+                      <span className="flex items-center gap-2 italic">
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Sending...
+                      </span>
+                    ) : 'Send Report to Inbox'}
+                  </button>
+                )}
+
+                {emailSent && (
+                  <div className="flex items-center gap-2 text-green-400 font-semibold bg-green-500/10 px-4 py-2 rounded-lg border border-green-500/20">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Report Delivered
+                  </div>
+                )}
+              </div>
+
+              {emailError && (
+                <p className="text-red-400 text-sm mt-4 text-center">{emailError}</p>
               )}
             </div>
 
@@ -375,12 +393,11 @@ export default function SEOChecker() {
                           <h4 className="text-lg font-semibold text-white">{rec.title}</h4>
                         </div>
                         <div className="flex gap-2">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            rec.category === 'seo' ? 'bg-cyan-900/50 text-cyan-300 border border-cyan-700' :
-                            rec.category === 'geo' ? 'bg-orange-900/50 text-orange-300 border border-orange-700' :
-                            rec.category === 'technical' ? 'bg-purple-900/50 text-purple-300 border border-purple-700' :
-                            'bg-green-900/50 text-green-300 border border-green-700'
-                          }`}>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${rec.category === 'seo' ? 'bg-cyan-900/50 text-cyan-300 border border-cyan-700' :
+                              rec.category === 'geo' ? 'bg-orange-900/50 text-orange-300 border border-orange-700' :
+                                rec.category === 'technical' ? 'bg-purple-900/50 text-purple-300 border border-purple-700' :
+                                  'bg-green-900/50 text-green-300 border border-green-700'
+                            }`}>
                             {rec.category?.toUpperCase() || 'SEO'}
                           </span>
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${priorityStyles[rec.priority]}`}>
